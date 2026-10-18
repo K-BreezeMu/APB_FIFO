@@ -102,7 +102,7 @@ class apb_refmodel;
 		endfunction
 
 	function void write (bit [7:0] addr,bit [31:0] wdata);
-		case(addr):
+		case(addr)
 			CTRL:begin
 				en = wdata[0];
 				clr = wdata[1];
@@ -116,7 +116,7 @@ class apb_refmodel;
 			DATA:begin
 				push(wdata[WIDTH-1:0]);
 			end
-			default: `uvm_warning("SCB","unknown reg!!!!");
+			default: `uvm_warning("SCB","unknown reg!!!!")
 		endcase
 	endfunction
 endclass

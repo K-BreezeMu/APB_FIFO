@@ -23,4 +23,7 @@ package apb_pkg;
 
 	`include "apb_env.sv"
 
+	`include "base_sequence.sv"
+	`include "base_sequence_test.sv"
+
 endpackage

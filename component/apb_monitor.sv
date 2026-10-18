@@ -11,23 +11,23 @@ class apb_monitor extends uvm_monitor;
 	function void build_phase(uvm_phase phase);
 		super.build_phase(phase);
 		ap = new("ap",this);
-		if(!uvm_config_db#(apb_interface)::get(this,"","vif",vif))begin
+		if(!uvm_config_db#(virtual apb_interface)::get(this,"","vif",vif))begin
 			`uvm_fatal("apb_monitor","no vif")
 		end
 	endfunction
 	
-	virtual task run_phase(uvm_phase);
+	virtual task run_phase(uvm_phase phase);
 		apb_sequence_item item;
 		forever begin
 		@(vif.mon_cb);
-		if((vif.mon_cb.PSEL && vif.mon_cb.PPENABLE && vif.mon_cb.PPREADY) || (vif.PRESETn == 1'b0)) begin
+		if((vif.mon_cb.PSEL && vif.mon_cb.PENABLE && vif.mon_cb.PREADY) || (vif.PRESETn == 1'b0)) begin
 		item = apb_sequence_item::type_id::create("item",this);
-		item.presetn <= vif.PRESETn;
-		item.pwrite <= vif.mon_cb.PPWRITE;
-		item.paddr <= vif.mon_cb.PPADDR;
-		item.pwdata <= vif.mon_cb.PPWDATA;
-		item.prdata <= vif.mon_cb.PPRDATA;
-		item.pslverr <= vif.mon_cb.PPSLVERR;
+		item.presetn = vif.PRESETn;
+		item.pwrite = vif.mon_cb.PWRITE;
+		item.paddr = vif.mon_cb.PADDR;
+		item.pwdata = vif.mon_cb.PWDATA;
+		item.prdata = vif.mon_cb.PRDATA;
+		item.pslverr = vif.mon_cb.PSLVERR;
 		ap.write(item);
 		end
 	end

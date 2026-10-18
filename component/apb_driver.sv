@@ -24,7 +24,7 @@ class apb_driver extends uvm_driver #(apb_sequence_item);
 	endtask
 
 	virtual task drive(apb_sequence_item tr);
-		if(tr.PRESETn == 1'b0) begin
+		if(tr.presetn == 1'b0) begin
 			@(vif.drv_cb);
 			vif.PRESETn <= 1'b0;
 		return;
@@ -46,9 +46,9 @@ class apb_driver extends uvm_driver #(apb_sequence_item);
 			@(vif.drv_cb);
 		end
 
-		tr.pslverr <= vif.PSLVERR;
+		tr.pslverr = vif.PSLVERR;
 		if(!tr.pwrite) begin
-			tr.prdata = vif.PRDATA;
+			tr.prdata <= vif.PRDATA;
 		end
 
 		@(vif.drv_cb);
@@ -63,7 +63,7 @@ class apb_driver extends uvm_driver #(apb_sequence_item);
 		forever begin
 			seq_item_port.get_next_item(tr);
 			drive(tr);
-			seq_item_port.item_done();
+			seq_item_port.item_done(tr);
 		end
 	endtask
 endclass

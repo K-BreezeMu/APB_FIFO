@@ -23,7 +23,7 @@ class apb_scoreboard extends uvm_scoreboard;
 		if(exp !==act) begin
 			fail++;
 			`uvm_error("SCB","----------------------------------------------")
-			`uvm_error("SCB",$sformatf("%s Mismatch:exp =0x%08h,act =0x%08h",reg_name,exp,act))
+			`uvm_error("SCB",$sformatf("0x%02h Mismatch:exp =0x%08h,act =0x%08h",addr,exp,act))
 
 			if(addr == STATUS) begin 
 			`uvm_error("SCB",$sformatf("Empty        : exp = %0b,act = %0b",exp[0],act[0]))
@@ -60,7 +60,7 @@ endfunction
 		end
 
 		total++;
-		`uvm_info("SCB",$sformatf("pwrite = %0b,paddr = %02h,pwdata = %08h,prdata = %08h,pslverr = %0b",tr.pwrite,tr.paddr,tr.pwdata,tr.prdata,tr.pslverr))
+		`uvm_info("SCB",$sformatf("pwrite = %0b,paddr = %02h,pwdata = %08h,prdata = %08h,pslverr = %0b",tr.pwrite,tr.paddr,tr.pwdata,tr.prdata,tr.pslverr),UVM_MEDIUM)
 		if(tr.pwrite == 1'b1) begin
 		refmodel.write(tr.paddr,tr.pwdata);
 		end
