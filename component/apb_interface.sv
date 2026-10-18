@@ -19,5 +19,6 @@ interface apb_interface(input PCLK);
 
 	clocking mon_cb @(posedge PCLK);
 		default input #1step;
-		input PSSL,PENABLE,PWRITE,PADDR,PWDATA,PRDATA,PREADY,PSLVERR;	   
+		input PSEL,PENABLE,PWRITE,PADDR,PWDATA,PRDATA,PREADY,PSLVERR;	   
        	endclocking
+endinterface

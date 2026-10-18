@@ -24,13 +24,13 @@ class apb_refmodel;
 
 	function void updata_flags();
 		count = data.size();
-		emtpy = (count == 0);
+		empty = (count == 0);
 		full = (count >= DEPTH);
 		almost_empty = (count <= almost_empty_th);
 		almost_full = (count > almost_full_th);
 	endfunction
 
-	function bit push (bit [WIDTH-1] data_in);
+	function bit push (bit [WIDTH-1:0] data_in);
 		if(!en) begin
 			return 1;
 		end
@@ -70,11 +70,11 @@ class apb_refmodel;
 		almost_full_th = DEPTH -1;
 		almost_empty_th = 8'd1;
 		overflow = 1'b0;
-		underflow =1'b0
+		underflow =1'b0;
 		updata_flags();
 	endfunction
 
-	function clear();
+	function void clear();
 		data.delete();
 		updata_flags();
 		overflow = 1'b0;
@@ -83,7 +83,7 @@ class apb_refmodel;
 
 	function bit [31:0] read(bit [7:0] addr);
 		bit [31:0] data_out;
-		case(addr):
+		case(addr)
 			CTRL:begin
 				data_out = {29'd0,drop_on_full,clr,en};
 			end
@@ -107,7 +107,7 @@ class apb_refmodel;
 				en = wdata[0];
 				clr = wdata[1];
 				drop_on_full = wdata[2];
-				if(clr) clr <=1'b0;
+				if(clr) clr =1'b0;
 			end
 			THRESH:begin
 				almost_full_th = wdata[7:0];

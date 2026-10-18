@@ -9,6 +9,7 @@ class apb_monitor extends uvm_monitor;
 	endfunction
 
 	function void build_phase(uvm_phase phase);
+		super.build_phase(phase);
 		ap = new("ap",this);
 		if(!uvm_config_db#(apb_interface)::get(this,"","vif",vif))begin
 			`uvm_fatal("apb_monitor","no vif")
@@ -19,14 +20,14 @@ class apb_monitor extends uvm_monitor;
 		apb_sequence_item item;
 		forever begin
 		@(vif.mon_cb);
-		if(vif.PSEL && vif.PENABLE && vif.PREADY || vif.PRESETn == 1'b0) begin
+		if((vif.mon_cb.PSEL && vif.mon_cb.PPENABLE && vif.mon_cb.PPREADY) || (vif.PRESETn == 1'b0)) begin
 		item = apb_sequence_item::type_id::create("item",this);
 		item.presetn <= vif.PRESETn;
-		item.pwrite <= vif.PWRITE;
-		item.paddr <= vif.PADDR;
-		item.pwdata <= vif.PWDATA;
-		item.prdata <= vif.PRDATA;
-		item.pslverr <= vif.PSLVERR;
+		item.pwrite <= vif.mon_cb.PPWRITE;
+		item.paddr <= vif.mon_cb.PPADDR;
+		item.pwdata <= vif.mon_cb.PPWDATA;
+		item.prdata <= vif.mon_cb.PPRDATA;
+		item.pslverr <= vif.mon_cb.PPSLVERR;
 		ap.write(item);
 		end
 	end

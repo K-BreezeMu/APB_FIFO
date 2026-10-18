@@ -1,4 +1,4 @@
-class apb_driver extends uvm_driver #(apb_sequence_item)
+class apb_driver extends uvm_driver #(apb_sequence_item);
 	`uvm_component_utils(apb_driver)
 
 	function new(string name = "apb_driver",uvm_component parent);
@@ -27,22 +27,22 @@ class apb_driver extends uvm_driver #(apb_sequence_item)
 		if(tr.PRESETn == 1'b0) begin
 			@(vif.drv_cb);
 			vif.PRESETn <= 1'b0;
-		return
+		return;
 	end
 
 		@(vif.drv_cb);
 		vif.PRESETn <= 1'b1;
-		vif.PSEL <= 1'b1;
-		vif.PENABLE <= 1'b0;
-		vif.PWRITE <= tr.pwrite;
-		vif.PADDR <= tr.paddr;
-		vif.PWDATA <= tr.PWDATA;
+		vif.drv_cb.PSEL <= 1'b1;
+		vif.drv_cb.PENABLE <= 1'b0;
+		vif.drv_cb.PWRITE <= tr.pwrite;
+		vif.drv_cb.PADDR <= tr.paddr;
+		vif.drv_cb.PWDATA <= tr.pwdata;
 
 		@(vif.drv_cb);
 		vif.PENABLE <= 1'b1;
 
 		@(vif.drv_cb);
-		while(vif.PREADY != 1'b1) begin
+		while(vif.drv_cb.PREADY != 1'b1) begin
 			@(vif.drv_cb);
 		end
 
