@@ -26,7 +26,7 @@ class reset_sequence extends base_sequence;
 		read(CTRL,data);
 		write(DATA,32'h0010);
 		read_status();
-		//#100;
+		#100;
 		`uvm_info(get_type_name(),"reset time",UVM_MEDIUM)
 		reset();
 		read_status();

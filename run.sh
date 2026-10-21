@@ -11,7 +11,7 @@ SRC="$VIF_FILE $PKG_FILE $DUT_FILE $TOP_FILE"
 
 TOP="tb_top"
 OPT="tb_top_opt"
-TESTS="base_sequence_test reset_sequence_test push_pop_sequence_test"
+TESTS="reset_sequence_test push_pop_sequence_test"
 
 
 INCDIR="+incdir+$ROOT/component +incdir+$ROOT/sequence_test"

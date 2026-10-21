@@ -51,7 +51,7 @@ class apb_driver extends uvm_driver #(apb_sequence_item);
 
 		tr.pslverr = vif.PSLVERR;
 		if(!tr.pwrite) begin
-			tr.prdata <= vif.drv_cb.PRDATA;
+			tr.prdata = vif.drv_cb.PRDATA;
 		end
 
 		drive_idle();

@@ -94,7 +94,7 @@ module apb_sync_fifo #(
 
   // Count/flags
   always @(posedge PCLK or posedge PRESETn) begin 
-    if (PRESETn) begin
+    if (!PRESETn) begin
       count <= '0;
       wptr  <= '0;
       rptr  <= '0;

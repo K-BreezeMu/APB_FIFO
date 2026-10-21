@@ -109,6 +109,7 @@ class apb_refmodel;
 				clr = wdata[1];
 				drop_on_full = wdata[2];
 				if(clr) begin wdata[0] =1'b0;
+						clear();
 						clr = 1'b0;
 					end
 			end
