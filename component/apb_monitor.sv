@@ -20,7 +20,10 @@ class apb_monitor extends uvm_monitor;
 		apb_sequence_item item;
 		forever begin
 		@(vif.mon_cb);
-		if((vif.mon_cb.PSEL && vif.mon_cb.PENABLE && vif.mon_cb.PREADY) || (vif.PRESETn == 1'b0)) begin
+		//`uvm_info("MON", $sformatf("@%0t PRESETn=%b PSEL=%b PENABLE=%b PREADY=%b",
+      	        //$time, vif.PRESETn, vif.mon_cb.PSEL, vif.mon_cb.PENABLE, vif.mon_cb.PREADY), UVM_LOW)
+		#0;
+		if((vif.mon_cb.PSEL && vif.mon_cb.PENABLE && vif.mon_cb.PREADY) ) begin
 		item = apb_sequence_item::type_id::create("item",this);
 		item.presetn = vif.PRESETn;
 		item.pwrite = vif.mon_cb.PWRITE;
@@ -30,7 +33,19 @@ class apb_monitor extends uvm_monitor;
 		item.pslverr = vif.mon_cb.PSLVERR;
 		ap.write(item);
 		end
-	end
+		if(vif.PRESETn == 1'b0) begin
+		item = apb_sequence_item::type_id::create("item",this);
+		item.presetn = vif.PRESETn;
+		item.pwrite = vif.mon_cb.PWRITE;
+		item.paddr = vif.mon_cb.PADDR;
+		item.pwdata = vif.mon_cb.PWDATA;
+		item.prdata = vif.mon_cb.PRDATA;
+		item.pslverr = vif.mon_cb.PSLVERR;
+		ap.write(item);
+		end
+
+			
+		end
 	endtask
 endclass
 

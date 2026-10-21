@@ -27,6 +27,9 @@ class apb_driver extends uvm_driver #(apb_sequence_item);
 		if(tr.presetn == 1'b0) begin
 			@(vif.drv_cb);
 			vif.PRESETn <= 1'b0;
+			@(vif.drv_cb);
+			vif.PRESETn <= 1'b1;
+
 		return;
 	end
 
@@ -48,10 +51,9 @@ class apb_driver extends uvm_driver #(apb_sequence_item);
 
 		tr.pslverr = vif.PSLVERR;
 		if(!tr.pwrite) begin
-			tr.prdata <= vif.PRDATA;
+			tr.prdata <= vif.drv_cb.PRDATA;
 		end
 
-		@(vif.drv_cb);
 		drive_idle();
 	endtask
 
@@ -62,6 +64,7 @@ class apb_driver extends uvm_driver #(apb_sequence_item);
 
 		forever begin
 			seq_item_port.get_next_item(tr);
+			`uvm_info("Driver", $sformatf("Driving %s transaction: addr=0x%02h, pwdata=0x%0h",tr.pwrite ? "WRITE" : "READ", tr.paddr, tr.pwdata), UVM_MEDIUM)
 			drive(tr);
 			seq_item_port.item_done(tr);
 		end

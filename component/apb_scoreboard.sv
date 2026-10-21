@@ -25,7 +25,7 @@ class apb_scoreboard extends uvm_scoreboard;
 			`uvm_error("SCB","----------------------------------------------")
 			`uvm_error("SCB",$sformatf("0x%02h Mismatch:exp =0x%08h,act =0x%08h",addr,exp,act))
 
-			if(addr == STATUS) begin 
+			if(addr == 8'h08) begin 
 			`uvm_error("SCB",$sformatf("Empty        : exp = %0b,act = %0b",exp[0],act[0]))
 			`uvm_error("SCB",$sformatf("Full         : exp = %0b,act = %0b",exp[1],act[1]))
 			`uvm_error("SCB",$sformatf("almost_full  : exp = %0b,act = %0b",exp[2],act[2]))
@@ -33,19 +33,20 @@ class apb_scoreboard extends uvm_scoreboard;
 			`uvm_error("SCB",$sformatf("overflow     : exp = %0b,act = %0b",exp[4],act[4]))
 			`uvm_error("SCB",$sformatf("underflow    : exp = %0b,act = %0b",exp[5],act[5]))
 			`uvm_error("SCB",$sformatf("count        : exp = %0d,act = %0d",exp[13:6],act[13:6]))
-		end else if(addr == CTRL) begin
+		end else if(addr == 8'h00) begin
 			`uvm_error("SCB",$sformatf("en		 : exp = %0b,act = %0b",exp[0],act[0]))
 			`uvm_error("SCB",$sformatf("clr		 : exp = %0b,act = %0b",exp[1],act[1]))
 			`uvm_error("SCB",$sformatf("drop_on_full : exp = %0b,act = %0b",exp[2],act[2]))
-		end else if(addr == THRESH) begin
+		end else if(addr == 8'h04) begin
 			`uvm_error("SCB",$sformatf("almost_full_th  : exp = %0d,act = %0d",exp[7:0],act[7:0]))
 			`uvm_error("SCB",$sformatf("almost_empty_th : exp = %0d,act = %0d",exp[15:8],act[15:8]))
 		end
-			`uvm_error("SCB","----------------------------------------------")
+			`uvm_error("SCB","-----------------FAIL-------------------------")
 		end
 	       	else begin
 			pass++;
 			`uvm_info("SCB","-----------------------------------------------",UVM_MEDIUM)
+			`uvm_info("SCB",$sformatf("0x%02h match:exp =0x%08h,act =0x%08h",addr,exp,act),UVM_MEDIUM)
 			`uvm_info("SCB","--------------------PASS-----------------------",UVM_MEDIUM)
 		end
 endfunction
@@ -60,7 +61,6 @@ endfunction
 		end
 
 		total++;
-		`uvm_info("SCB",$sformatf("pwrite = %0b,paddr = %02h,pwdata = %08h,prdata = %08h,pslverr = %0b",tr.pwrite,tr.paddr,tr.pwdata,tr.prdata,tr.pslverr),UVM_MEDIUM)
 		if(tr.pwrite == 1'b1) begin
 		refmodel.write(tr.paddr,tr.pwdata);
 		end

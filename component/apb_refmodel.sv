@@ -27,7 +27,7 @@ class apb_refmodel;
 		empty = (count == 0);
 		full = (count >= DEPTH);
 		almost_empty = (count <= almost_empty_th);
-		almost_full = (count > almost_full_th);
+		almost_full = (count >= almost_full_th);
 	endfunction
 
 	function bit push (bit [WIDTH-1:0] data_in);
@@ -38,9 +38,10 @@ class apb_refmodel;
 			overflow = 1'b1;
 			if(drop_on_full)
 				return 0;
-			else
+			else begin
 				return 1;
 			end
+		end
 	
 			data.push_back(data_in);
 			updata_flags();
@@ -107,7 +108,9 @@ class apb_refmodel;
 				en = wdata[0];
 				clr = wdata[1];
 				drop_on_full = wdata[2];
-				if(clr) clr =1'b0;
+				if(clr) begin wdata[0] =1'b0;
+						clr = 1'b0;
+					end
 			end
 			THRESH:begin
 				almost_full_th = wdata[7:0];

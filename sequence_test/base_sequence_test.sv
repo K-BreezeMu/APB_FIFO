@@ -12,5 +12,4 @@ class base_sequence_test extends uvm_test;
 		super.build_phase(phase);
 		env = apb_env::type_id::create("env",this);
 	endfunction
-
 endclass

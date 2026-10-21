@@ -25,5 +25,9 @@ package apb_pkg;
 
 	`include "base_sequence.sv"
 	`include "base_sequence_test.sv"
+	`include "reset_sequence.sv"
+	`include "reset_sequence_test.sv"
+	`include "push_pop_sequence.sv"
+	`include "push_pop_sequence_test.sv"
 
 endpackage
