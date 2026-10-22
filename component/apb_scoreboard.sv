@@ -8,6 +8,7 @@ class apb_scoreboard extends uvm_scoreboard;
 	int pass;
 	int fail;
 	int total;
+	bit pslverr;
 
 	function new(string name = "apb_scoreboard",uvm_component parent);
 		super.new(name,parent);
@@ -20,6 +21,7 @@ class apb_scoreboard extends uvm_scoreboard;
 	endfunction
 
 	virtual function void compare(bit [7:0] addr,bit [31:0] exp,bit [31:0] act);
+    total++;
 		if(exp !==act) begin
 			fail++;
 			`uvm_error("SCB","----------------------------------------------")
@@ -60,9 +62,14 @@ endfunction
 			return;
 		end
 
-		total++;
 		if(tr.pwrite == 1'b1) begin
-		refmodel.write(tr.paddr,tr.pwdata);
+			if(tr.paddr == 8'h0C) begin
+			pslverr = refmodel.write(tr.paddr,tr.pwdata);
+			compare_pslverr(pslverr,tr.pslverr);
+			end
+			else begin
+			refmodel.write(tr.paddr,tr.pwdata);
+			end
 		end
        		else begin
 		exp = refmodel.read(tr.paddr);
@@ -70,6 +77,21 @@ endfunction
 		compare(tr.paddr,exp,act);
 		end
 	endfunction
+
+	function void compare_pslverr(bit exp, bit act);
+    if(exp !== act) begin
+		fail++;
+		`uvm_error("SCB","--------------------------------")
+		`uvm_error("SCB", $sformatf("PSLVERR Mismatch: Expected=%0b, Actual=%0b", exp, act))
+		`uvm_error("SCB","--------------------------------")
+	end else begin
+		if(exp) begin
+			`uvm_info("SCB", $sformatf("PSLVERR error but match"), UVM_MEDIUM)
+		end else begin
+		`uvm_info("SCB", $sformatf("PSLVERR(no error)"), UVM_MEDIUM)
+		end
+	end
+endfunction
 
 	function void report_phase(uvm_phase phase);
 		super.report_phase(phase);

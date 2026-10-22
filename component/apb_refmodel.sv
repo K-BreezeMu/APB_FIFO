@@ -27,7 +27,7 @@ class apb_refmodel;
 		empty = (count == 0);
 		full = (count >= DEPTH);
 		almost_empty = (count <= almost_empty_th);
-		almost_full = (count >= almost_full_th);
+		almost_full = (count > almost_full_th);
 	endfunction
 
 	function bit push (bit [WIDTH-1:0] data_in);
@@ -45,7 +45,7 @@ class apb_refmodel;
 	
 			data.push_back(data_in);
 			updata_flags();
-			return 1;
+			return 0;
 		endfunction
 
 	function bit [WIDTH-1:0] pop();
@@ -102,7 +102,7 @@ class apb_refmodel;
 			return data_out;
 		endfunction
 
-	function void write (bit [7:0] addr,bit [31:0] wdata);
+	function bit write (bit [7:0] addr,bit [31:0] wdata);
 		case(addr)
 			CTRL:begin
 				en = wdata[0];
@@ -118,7 +118,7 @@ class apb_refmodel;
 				almost_empty_th = wdata[15:8];
 			end
 			DATA:begin
-				push(wdata[WIDTH-1:0]);
+				return push(wdata[WIDTH-1:0]);
 			end
 			default: `uvm_warning("SCB","unknown reg!!!!")
 		endcase
