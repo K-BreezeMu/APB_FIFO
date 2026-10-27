@@ -36,7 +36,7 @@
 | 维度 | 内容 |
 | --- | --- |
 | 验证方法学 | UVM 1.2（`uvm_agent` / `uvm_scoreboard` / `uvm_subscriber`） |
-| 总线协议 | APB3，两周期 SETUP / ACCESS 传输，零等待（`PREADY` 恒 1） |
+| 总线协议 | APB3，两周期 SETUP / ACCESS 传输；DUT 侧零等待（`PREADY` 由 DUT 固定接 1，driver 仍保留标准等待逻辑） |
 | 激励方式 | 定向用例（复位、边界、上溢下溢、粘滞性）+ 带权随机 |
 | 检查手段 | 队列级 reference model 逐拍比对 `PRDATA` / `PSLVERR` |
 | 覆盖率 | 5 个 covergroup，含读写 × 地址 cross |
@@ -85,7 +85,8 @@
 - **clr = 1**：同步清空 FIFO（`count` / 指针 / 标志全部复位），该位自清。
 - **drop_on_full = 1**：写满时静默丢弃新数据（仍应上报 `PSLVERR`）；为 0 时写满应返回错误。
 - **空读**：应返回 `0` 并置 `underflow`、拉高 `PSLVERR`。
-- `PREADY` 恒为 1，即零等待状态；`PSLVERR` 应由 DUT 按上述规则产生。
+- **`PREADY`**：DUT 内部 `assign PREADY = 1'b1;`，即零等待。driver 里虽有标准的 `while (vif.drv_cb.PREADY != 1'b1)` 等待循环，但在本 DUT 下永远不会进入等待分支。
+- **`PSLVERR`**：应由 DUT 在空读 / 写满等错误场景按上述规则拉高，并与参考模型的预期一起被 scoreboard 比对。
 
 ### APB3 时序
 
@@ -97,7 +98,7 @@ APB3 是两阶段传输协议，一笔写入固定经过 `IDLE → SETUP → ACC
 | SETUP | 1 | 0 | `PADDR` / `PWRITE` / `PWDATA` 建立，从机可拉低 `PREADY` 插入等待 |
 | ACCESS | 1 | 1 | `PENABLE` 拉高；`PREADY=1` 的当拍完成传输，读数据 `PRDATA` 与 `PSLVERR` 同时有效 |
 
-本 DUT 的 `PREADY` 恒为 1，即**零等待**：每笔访问固定占 2 个时钟周期（SETUP 1 拍 + ACCESS 1 拍），验证环境无需处理 wait state。
+本 DUT 的 `PREADY` 由 `assign PREADY = 1'b1;` 固定为高，因此是**零等待**：每笔访问固定占 2 个时钟周期（SETUP 1 拍 + ACCESS 1 拍）。注意这与 driver 无关 —— driver 实现了完整的 `PREADY` 等待握手（`while (vif.drv_cb.PREADY != 1'b1)`），只是本 DUT 从不让它真正等待；换成可插等待的从机时，driver 无需修改即可工作。
 
 ---
 
@@ -138,7 +139,7 @@ graph TB
 | --- | --- | --- |
 | `apb_interface` | [`component/apb_interface.sv`](component/apb_interface.sv) | 声明 APB 信号，提供 `drv_cb`（驱动）与 `mon_cb`（采样）两个 clocking block，隔离驱动与采样时序 |
 | `apb_sequence_item` | [`component/apb_sequence_item.sv`](component/apb_sequence_item.sv) | 事务对象，`paddr` 约束在 4 个合法地址内，并按寄存器位宽约束 `pwdata` 高位为 0 |
-| `apb_driver` | [`component/apb_driver.sv`](component/apb_driver.sv) | 实现 SETUP → ACCESS → IDLE 三段式握手，等待 `PREADY`，回填 `prdata` / `pslverr` |
+| `apb_driver` | [`component/apb_driver.sv`](component/apb_driver.sv) | 实现 SETUP → ACCESS → IDLE 三段式握手，**含 `PREADY` 等待循环**（本 DUT 不插等待，循环体不会执行），回填 `prdata` / `pslverr` |
 | `apb_monitor` | [`component/apb_monitor.sv`](component/apb_monitor.sv) | 在 `PSEL & PENABLE & PREADY` 时采样一笔完成的事务，同时把复位事件作为特殊事务广播 |
 | `apb_refmodel` | [`component/apb_refmodel.sv`](component/apb_refmodel.sv) | 用 SV 队列 `bit[7:0] data[$]` 建模 FIFO，独立实现 push / pop / 阈值 / 粘滞标志，作为比对基准 |
 | `apb_scoreboard` | [`component/apb_scoreboard.sv`](component/apb_scoreboard.sv) | 读操作比对 `PRDATA`；写 `DATA` 时比对 `PSLVERR`；mismatch 时按字段逐位打印期望值/实际值 |
@@ -360,8 +361,8 @@ count  : exp = 15,act = 15
 
 **协议覆盖**
 
-- DUT 的 `PREADY` 恒为 1，**没有覆盖 wait state 场景**；若要验证插等待的从机，driver 需要支持随机化 `PREADY` 延迟。
-- 未覆盖 APB 非法地址访问（`default` 分支）、`PSLVERR` 与 `PREADY` 的并发关系。
+- DUT 的 `PREADY` 被固定接 1，**wait state 路径实际没有被激励过**：driver 的等待逻辑本身是完备的，但没有事务能触发它进入循环体。若要覆盖插等待的场景，需要一个可配置 `PREADY` 延迟的 APB slave 模型（或改 DUT 注入延迟），并给 driver 加 `PREADY` 随机化。
+- 未覆盖 APB 非法地址访问（`default` 分支）、`PSLVERR` 与 `PREADY` 的并发关系（如 `PSLVERR` 与 `PREADY` 同拍拉高时 driver 的采样时机）。
 
 **检查完备性**
 
@@ -378,3 +379,6 @@ count  : exp = 15,act = 15
 **DUT 侧**
 
 - 仓库保留的是含 bug 版本。修复后可用 `make run_all` 做一次"清零"回归，`FALL` 应为 0，作为环境有效性的反向证明。
+
+---
+
