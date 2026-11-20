@@ -1,6 +1,6 @@
 # APB3 FIFO UVM 验证环境
 
-> **30 秒摘要**：用一个「带 5 个 RTL bug」的 APB3 FIFO 做完整 UVM 验证。项目的重点不是把测试跑通，而是**证明环境有能力发现错误**：5 个 RTL bug 全部由 scoreboard 自动比对捕获，并逐条定位到根因；另外还记录了 2 个 TB 自身的典型坑。
+> **30 秒摘要**：用一个「带 5 个 RTL bug」的 APB3 FIFO 做完整 UVM 验证。项目不仅仅把测试跑通，而且**证明环境有能力发现错误**：5 个 RTL bug 全部由 scoreboard 自动比对捕获，并逐条定位到根因；另外还记录了 2 个 TB 自身的典型坑。
 >
 > 关键词：`SystemVerilog` · `UVM 1.2` · `APB3` · `FIFO` · `参考模型` · `功能覆盖率` · `Debug`
 >
